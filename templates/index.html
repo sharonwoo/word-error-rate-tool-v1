@@ -1,0 +1,39 @@
+{% extends "base.html"%}
+{% block content %}
+<div class="jumbotron">
+  <div id="definition-area">
+    <h5 class="text-heading">Definitions</h5>
+      <dt class="def">Word Error Rate (WER)</dt>
+      <!-- \[WER = {insertions + \deletions + \substitutions} \over \{total number of words} \] -->
+      $$ WER = \frac{insertions + deletions + substitutions}{\text{ total number of words }} $$
+      <p></p>
+      <dt class="def">Edit Distance</dt>
+      <dd class="meaning"><i>The edit distance is the minimum number of word edits (word insertions, deletions and substitutions) required to transform one value to another.</i></dd>
+      <p> </p>
+      <p> </p>
+  </div>
+
+
+<h5 class="text-heading">Input</h5>
+
+<form action="{{url_for('report')}}">
+  <div class="form-row">
+    <div class="form-group col-md-6">
+       <label for="truth">Ground Truth</label>
+       <input type="text" name="truth" class="form-control" placeholder="Enter ground truth here" style="length:auto">
+    </div>
+    <div class="form-group col-md-6">
+       <label for="transcript">Machine Transcript</label>
+       <input type="text" name="transcript" class="form-control" placeholder="Enter machine-generated text here">
+    </div>
+  </div>
+    <!-- <button type="submit" class="btn btn-default">Begin Processing</button> -->
+  <div class="form-row">
+    <div class="form-group col-md-6">
+      <input type="submit" value="Begin Processing" class="btn btn-primary btn-lg">
+    </div>
+  </div>
+</form>
+
+</div>
+{% endblock %}

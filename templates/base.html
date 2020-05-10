@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Word Error Rate Tool</title>
+
+    <!--bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <!-- mathjax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- legend -->
+    <script>
+    function showLegend() {
+      var x = document.getElementById("legend");
+      if (x.style.display === "block") {
+        x.style.display = "none";
+      } else {
+        x.style.display = "block";
+      }
+    }
+    </script>
+
+
+    <!-- dynamic formatting don't come cheap, bisous -->
+    <style>
+    #legend {display: none; }
+
+      div {margin-bottom: 10px;}
+      div p {margin: 0; padding: 0;}
+      .eq {float: left; }
+      div.eq {margin-left:5px}
+      .sub {float: left; display:inline-block;}
+      div.sub {margin-left:5px}
+      div.sub p.sub {background-color: rgba(235,174,52,0.3);}
+
+      .del {float: left; display:inline-block;}
+      div.del {margin-left:5px}
+      div.del p.del {background-color: rgba(132,140,148,0.3); text-decoration: line-through;}
+
+      .ins {float: left;display:inline-block;}
+      div.ins {margin-left:5px}
+      div.ins p.ins {background-color: rgba(0,128,129,0.3)}
+
+      .grid-container {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .grid-container .item {
+        flex: 1;
+      }
+    </style>
+
+
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="{{url_for('index')}}">Word Error Rate Tool</a>
+    </nav>
+    {% block content %}
+
+    {% endblock %}
+  </body>
+</html>

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="jumbotron">
+    <h5 class="text-heading">Results</h5>
+
+    <p>Word Error: {{word_error | safe}}
+    <ul>
+      <li>Insertions: {{insertion | safe}}</li>
+      <li>Deletions: {{deletion | safe}}</li>
+      <li>Substitutions: {{substitution | safe}}</li>
+    </ul>
+
+    <h5 class="text-heading">Text Comparison</h5>
+
+    <div class="grid-container">{{highlighted_text | safe}}</div> <!-- safe: render as is -->
+
+    <p style="font-size:50%;">Number of seconds taken: {{time_taken}}</p>
+    <p></p>
+
+    <button type="button" onclick="showLegend()" class="btn btn-default btn-xs">Click to display legend</button>
+    <!-- https://www.w3schools.com/howto/howto_js_toggle_hide_show.asp -->
+      <div id="legend" style="font-size:50%;">
+        <p> Original text is displayed above the machine-generated transcript.
+        <ul>
+            <li>Insertion: <span style="background-color: rgba(0,128,129,0.3)">inserted words</span></li>
+            <li>Deletions: <span style="background-color: rgba(132,140,148,0.3); text-decoration: line-through;">deleted words</span></li></li>
+            <li>Substitution: <s>original</s> <span style="background-color: rgba(235,174,52,0.3)"> replacement</span></li></li>
+        </ul>
+      </div>
+  </div>
+{% endblock %}
