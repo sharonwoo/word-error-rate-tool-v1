@@ -1,3 +1,4 @@
+# Note we imported request!
 from flask import Flask, render_template, request, abort
 import nltk, json, os, re, warnings, operator, html, time
 
@@ -11,25 +12,15 @@ def _edit_dist_init(len1, len2):
         c = lev[0][j] = j  # row 0: 0,1,2,3,4,...
     return lev
 
-def _edit_dist_step(lev, i, j, s1, s2, substitution_cost=1, transpositions=False):
+def _edit_dist_step(lev, i, j, s1, s2, substitution_cost=1):
     c1 = s1[i - 1]   #last alphabet of the string
     c2 = s2[j - 1]   #last alphabet of the string
-
-    # skipping a character in s1
     a = lev[i - 1][j] + 1
-    # skipping a character in s2
     b = lev[i][j - 1] + 1
-    # substitution
     c = lev[i - 1][j - 1] + (substitution_cost if c1 != c2 else 0)  #replacement
 
-    # transposition
-    d = c + 1  # never picked by default
-    if transpositions and i > 1 and j > 1:
-        if s1[i - 2] == c2 and s2[j - 2] == c1:
-            d = lev[i - 2][j - 2] + 1
-
     # pick the cheapest
-    lev[i][j] = min(a, b, c, d)
+    lev[i][j] = min(a, b, c)
 
     return lev[i][j]
 
@@ -54,7 +45,6 @@ def _edit_dist_backtrace(lev):
         )
 
         X, (i, j) = min(direction_costs, key=operator.itemgetter(0))
-
 
         if X == lev[old_i][old_j] and lev[old_i-1][old_j-1]==lev[old_i][old_j]:
             counter.append('equal')
@@ -88,16 +78,11 @@ def edit_distance_align(s1, s2, substitution_cost=1):
                 s1,
                 s2,
                 substitution_cost=substitution_cost,
-                transpositions=False,
             )
 
     # backtrace to find alignment
     alignment, counter = _edit_dist_backtrace(lev)
     return alignment, counter, lev[len1][len2]
-
-# Prevent special characters like & and < to cause the browser to display something other than what you intended.
-def html_escape(text):
-    return html.escape(text)
 
 def highlight_text(A,B):
     start_time = time.time()
@@ -105,47 +90,75 @@ def highlight_text(A,B):
     b = B.split(" ")
     alignment, counter, edit_dist = edit_distance_align(a, b, substitution_cost=1)
     counter = list(reversed(counter))
-    highlighted_text = []
+
     token_a, token_b, pointer_a, pointer_b = a, b, 0, 0
     inst, delete, subst = 0, 0, 0
 
-    sub_html_1, sub_html_2, sub_html_3 = "<div class='sub'><s><p>", "</p></s><p class='sub'>", "</p></div>"
+    orig_text, trans_text = [], []
 
+    div_row_start = "<div class='container-fluid'><div class='row'><div class='col-0'>"
+    div_row_2 = "</div><div class='col textrow' style='border-right: 1px dotted gray;'>" # used to style divider
+    div_row_3 = "</div><div class='col textrow'>" # original was used twice
+    div_row_end = "</div></div></div>"
+
+    html_combined = [div_row_start+div_row_3+"<p><u>Ground Truth</u></p>"+div_row_3+"<p><u>Machine Transcript</u></p>"+div_row_end] # start with original vs
+
+    classname_pointer = 0
+
+    word_counter = 0
 
     for index, action in enumerate(counter): # counter will always take the longest string
         if action is "equal":
-            highlighted_text.append("<div class='eq grid-item'><p>"+token_a[pointer_a]+"</p><p>&nbsp;</p></div>")
+            classname_pointer += 1
+            try:
+                orig_text.append("<div class='{}' onmouseover='highlight(this);' onmouseout='unhighlight(this);'><p class='eq'>".format('class'+str(classname_pointer))+token_a[pointer_a]+"</p></div>")
+                trans_text.append("<div class='{}' onmouseover='highlight(this);' onmouseout='unhighlight(this);'><p class='eq'>".format('class'+str(classname_pointer))+token_a[pointer_a]+"</p></div>")
+            except:
+                abort(404)
+
             pointer_a += 1
             pointer_b += 1
+            word_counter += 1
 
         elif action is "substitution":
             subst += 1
-            sub_word = token_b[pointer_b]
+            classname_pointer += 1
             try:
-                orig_word = token_a[pointer_a]
+                orig_text.append("<div class='{}' onmouseover='highlight(this);' onmouseout='unhighlight(this);'><p class='sub'>".format('class'+str(classname_pointer))+token_a[pointer_a]+"</p></div>")
             except:
                 abort(404)
-            highlighted_text.append(sub_html_1+orig_word+sub_html_2+sub_word+sub_html_3)
+            try:
+                trans_text.append("<div class='{}' onmouseover='highlight(this);' onmouseout='unhighlight(this);'><p class='sub'>".format('class'+str(classname_pointer))+token_b[pointer_b]+"</p></div>")
+            except:
+                abort(404)
             pointer_a += 1
             pointer_b += 1
+            word_counter += 1
 
         elif action is "deletion":
             delete += 1
-            word = token_a[pointer_a]
             # highlight it red
-            highlighted_text.append("<div class='del grid-item'><p class='del'>"+word+"</p><p>&nbsp;</p></div>")
+            orig_text.append("<div><p class='del'>"+token_a[pointer_a]+"</p></div>") # don't double class
             pointer_a += 1
+            word_counter += 1
 
+        # for every 20 words in the original, move on to the next row
         elif action is "insertion":
             inst += 1
-            word = token_b[pointer_b]
-            # originally yellow 235 219 52; now red
-            highlighted_text.append('<div class="ins grid-item"><p>&nbsp;</p><p class="ins">' + word + '</p></div>')
+            trans_text.append("<div><p class='ins'>" + token_b[pointer_b] + "</p></div>") # don't double class
             pointer_b += 1
 
-    highlighted_text = ' '.join(highlighted_text)
+        if word_counter == 20 or index == len(counter) - 1: # last word is reached
+            word_counter = 0
+            trans_text = "".join(trans_text)
+            orig_text = "".join(orig_text)
+            html_combined.append(div_row_start+div_row_2+"".join(orig_text)+div_row_3+"".join(trans_text)+div_row_end)
+            orig_text = []
+            trans_text =[]
+
+    html_combined = ' '.join(html_combined)
     time_taken = time.time() - start_time
-    return highlighted_text, counter, inst, delete, subst, edit_dist, len(a), round(time_taken,3)
+    return html_combined, counter, inst, delete, subst, edit_dist, len(a), round(time_taken,3)
 
 app = Flask(__name__)
 
@@ -171,4 +184,4 @@ def report():
             word_error = word_error, time_taken = time_taken)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
