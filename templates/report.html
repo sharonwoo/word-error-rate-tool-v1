@@ -15,11 +15,12 @@
     <div class="grid-container">{{highlighted_text | safe}}</div> <!-- safe: render as is -->
 
     <p style="font-size:50%;">Number of seconds taken: {{time_taken}}</p>
-    <p></p>
+    <p>&nbsp;</p>
 
-    <button type="button" onclick="showLegend()" class="btn btn-default btn-xs">Click to display legend</button>
+    <button type="button" onclick="showLegend()" = class="btn btn-default btn-xs">Click to display legend</button>
     <!-- https://www.w3schools.com/howto/howto_js_toggle_hide_show.asp -->
-      <div id="legend" style="font-size:50%;">
+      <div id="legend" style="font-size:50%; display: none;">
+        <p>&nbsp;</p>
         <p> Original text is displayed above the machine-generated transcript.
         <ul>
             <li>Insertion: <span style="background-color: rgba(0,128,129,0.3)">inserted words</span></li>
